@@ -1,0 +1,302 @@
+#!/usr/bin/env python3
+# Copyright (C) 2023 Thies Lennart Alff
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+# USA
+
+import sys
+import rclpy
+from rclpy.node import Node
+from python_qt_binding import QtWidgets, QtCore, QtGui
+from hippo_msgs.msg import ActuatorSetpoint
+
+DOFs = ("roll", "pitch", "yaw", "thrust", "vertical_thrust", "lateral_thrust")
+BUTTONS = ("W", "S", "A", "D", "J", "L", "I", "K")
+
+
+class NotClickableButton(QtWidgets.QPushButton):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def mousePressEvent(self, e: QtGui.QMouseEvent) -> None:
+        pass
+
+
+class KeyboardNode(Node):
+
+    def __init__(self, node_name: str):
+        super().__init__(node_name=node_name)
+
+        qos = rclpy.qos.qos_profile_sensor_data
+        self.torque_msg = ActuatorSetpoint()
+        self.thrust_msg = ActuatorSetpoint()
+        self.torque_pub = self.create_publisher(ActuatorSetpoint,
+                                                'torque_setpoint', qos)
+        self.thrust_pub = self.create_publisher(ActuatorSetpoint,
+                                                'thrust_setpoint', qos)
+        self.publish_timer = self.create_timer(1 / 50.0, self.on_publish_timer)
+
+    def on_publish_timer(self):
+        self.publish()
+
+    def publish(self):
+        self.thrust_msg.header.stamp = self.get_clock().now().to_msg()
+        self.torque_msg.header.stamp = self.thrust_msg.header.stamp
+        self.torque_pub.publish(self.torque_msg)
+        self.thrust_pub.publish(self.thrust_msg)
+
+    def set_torques(self, torques):
+        self.torque_msg.x = torques[0]
+        self.torque_msg.y = torques[1]
+        self.torque_msg.z = torques[2]
+
+    def set_thrusts(self, thrusts):
+        self.thrust_msg.x = thrusts[0]
+        self.thrust_msg.y = thrusts[1]
+        self.thrust_msg.z = thrusts[2]
+
+
+class Window(QtWidgets.QWidget):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.node = KeyboardNode('keyboard')
+
+        self.scaling = {}
+        self.values = {}
+        for dof in DOFs:
+            self.values[dof] = 0.0
+
+        slider_box = QtWidgets.QGroupBox('Thruster Scaling')
+        slider_grid = QtWidgets.QGridLayout()
+        self.sliders = self.create_sliders()
+        for i, slider in enumerate(self.sliders):
+            label = QtWidgets.QLabel(slider)
+            slider_grid.addWidget(label, i, 0)
+            slider_grid.addWidget(self.sliders[slider], i, 1)
+        slider_box.setLayout(slider_grid)
+
+        control_box = QtWidgets.QGroupBox("Controls")
+        grid_buttons_left = QtWidgets.QGridLayout()
+        self.buttons = self.create_buttons()
+        grid_buttons_left.addWidget(self.buttons["W"], 0, 1)
+        grid_buttons_left.addWidget(self.buttons["A"], 1, 0)
+        grid_buttons_left.addWidget(self.buttons["S"], 1, 1)
+        grid_buttons_left.addWidget(self.buttons["D"], 1, 2)
+
+        grid_buttons_right = QtWidgets.QGridLayout()
+        grid_buttons_right.addWidget(self.buttons["J"], 1, 0)
+        grid_buttons_right.addWidget(self.buttons["L"], 1, 2)
+        grid_buttons_right.addWidget(self.buttons["I"], 0, 1)
+        grid_buttons_right.addWidget(self.buttons["K"], 1, 1)
+        hbox = QtWidgets.QHBoxLayout()
+        hbox.addLayout(grid_buttons_left)
+        line = QtWidgets.QFrame()
+        line.setFrameShape(QtWidgets.QFrame.VLine)
+        line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        hbox.addWidget(line)
+        hbox.addLayout(grid_buttons_right)
+        control_box.setLayout(hbox)
+
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addWidget(slider_box)
+        vbox.addWidget(control_box)
+        self.setLayout(vbox)
+
+    def create_sliders(self):
+        sliders = {}
+        for dof in DOFs:
+            sliders[dof] = self.create_slider(dof)
+        return sliders
+
+    def create_slider(self, name: str):
+        slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        slider.setMinimum(0)
+        slider.setMaximum(100)
+        slider.setValue(50)
+        slider.setSingleStep(1)
+        slider.setObjectName(name)
+        slider.valueChanged.connect(
+            lambda value: self.on_slider_changed(value, name))
+        self.scaling[name] = slider.value() / 100.0
+        slider.setFocusPolicy(QtCore.Qt.NoFocus)
+        return slider
+
+    def create_button(self, name: str):
+        button = NotClickableButton()
+        button.setObjectName(name)
+        button.setText(name)
+        button.setFocusPolicy(QtCore.Qt.NoFocus)
+        button.setStyleSheet("background-color : #183b65; color : white;")
+        if name == "W":
+            button.setToolTip("Positive thrust.")
+        elif name == "S":
+            button.setToolTip("Negative thrust.")
+        elif name == "A":
+            button.setToolTip("Positive lateral thrust.")
+        elif name == "D":
+            button.setToolTip("Negative lateral thrust.")
+        elif name == "J":
+            button.setToolTip("Positive yaw.")
+        elif name == "L":
+            button.setToolTip("Negative yaw.")
+        elif name == "I":
+            button.setToolTip("Positive vertical thrust.")
+        elif name == "K":
+            button.setToolTip("Negative vertical thrust.")
+        return button
+
+    def create_buttons(self):
+        buttons = {}
+        for b in BUTTONS:
+            buttons[b] = self.create_button(b)
+        return buttons
+
+    def on_key_pressed(self, name):
+        try:
+            self.buttons[name].setStyleSheet(
+                "background-color: #2dc6d6; color: white;")
+        except KeyError:
+            return
+
+    def on_key_released(self, name):
+        try:
+            self.buttons[name].setStyleSheet(
+                "background-color : #183b65; color : white;")
+        except KeyError:
+            return
+
+    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+        sign = 1.0
+        dof = ""
+        key = ""
+        if event.key() == QtCore.Qt.Key_A:
+            dof = "lateral_thrust"
+            sign = 1.0
+            key = "A"
+        elif event.key() == QtCore.Qt.Key_D:
+            dof = "lateral_thrust"
+            sign = -1.0
+            key = "D"
+        elif event.key() == QtCore.Qt.Key_W:
+            dof = "thrust"
+            sign = 1.0
+            key = "W"
+        elif event.key() == QtCore.Qt.Key_S:
+            dof = "thrust"
+            sign = -1.0
+            key = "S"
+        elif event.key() == QtCore.Qt.Key_J:
+            dof = "yaw"
+            sign = 1.0
+            key = "J"
+        elif event.key() == QtCore.Qt.Key_L:
+            dof = "yaw"
+            sign = -1.0
+            key = "L"
+        elif event.key() == QtCore.Qt.Key_I:
+            dof = "vertical_thrust"
+            sign = 1.0
+            key = "I"
+        elif event.key() == QtCore.Qt.Key_K:
+            dof = "vertical_thrust"
+            sign = -1.0
+            key = "K"
+        else:
+            return
+        self.on_key_pressed(key)
+        self.values[dof] = sign * self.scaling[dof]
+        self.set_output()
+
+    def set_output(self):
+        self.node.set_thrusts([
+            self.values['thrust'],
+            self.values['lateral_thrust'],
+            self.values['vertical_thrust'],
+        ])
+        self.node.set_torques([
+            self.values['roll'],
+            self.values['pitch'],
+            self.values['yaw'],
+        ])
+
+    def keyReleaseEvent(self, event: QtGui.QKeyEvent) -> None:
+        if event.isAutoRepeat():
+            return
+        dof = ""
+        key = ""
+        if event.key() == QtCore.Qt.Key_A:
+            dof = "lateral_thrust"
+            key = "A"
+        elif event.key() == QtCore.Qt.Key_D:
+            dof = "lateral_thrust"
+            key = "D"
+        elif event.key() == QtCore.Qt.Key_W:
+            dof = "thrust"
+            key = "W"
+        elif event.key() == QtCore.Qt.Key_S:
+            dof = "thrust"
+            key = "S"
+        elif event.key() == QtCore.Qt.Key_J:
+            dof = "yaw"
+            key = "J"
+        elif event.key() == QtCore.Qt.Key_L:
+            dof = "yaw"
+            key = "L"
+        elif event.key() == QtCore.Qt.Key_I:
+            dof = "vertical_thrust"
+            key = "I"
+        elif event.key() == QtCore.Qt.Key_K:
+            dof = "vertical_thrust"
+            key = "K"
+        else:
+            return
+        self.on_key_released(key)
+        self.values[dof] = 0.0
+        self.set_output()
+
+    def on_slider_changed(self, value: int, name: str):
+        self.set_scaler(value=value, name=name)
+
+    def set_scaler(self, value: int, name: str):
+        self.scaling[name] = value / 100.0
+
+    def closeEvent(self, event):
+        for key in self.values:
+            self.values[key] = 0.0
+        self.set_output()
+        self.node.publish()
+        import time
+        time.sleep(0.1)
+        rclpy.shutdown()
+        event.accept()
+
+
+def main():
+    app = QtWidgets.QApplication(sys.argv)
+    rclpy.init()
+    executor = rclpy.executors.SingleThreadedExecutor()
+    window = Window()
+    window.show()
+    executor.add_node(window.node)
+    while rclpy.ok():
+        executor.spin_once(0.1)
+        app.processEvents()
+    executor.remove_node(window.node)
+
+
+if __name__ == '__main__':
+    main()
