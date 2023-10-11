@@ -1,0 +1,7 @@
+**/COLCON_IGNORE
+*.pyc
+**/__pycache__/
+*.swp
+**/venv/
+.mypy_cache/
+.ruff_cache/
