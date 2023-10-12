@@ -1,6 +1,6 @@
 from ament_index_python.packages import get_package_share_path
 from hippo_common.launch_helper import (
-    PassLaunchArguments,
+    LaunchArgsDict,
     declare_vehicle_name_and_sim_time,
 )
 from launch import LaunchDescription
@@ -27,6 +27,13 @@ def declare_launch_args(launch_description: LaunchDescription) -> None:
         description='Path to mixer configuration .yaml file')
     launch_description.add_action(action)
 
+    action = DeclareLaunchArgument(
+        'start_gui',
+        default_value='true',
+        description=
+        'Start the gazebo GUI. Otherwise gazebo will run in headless mode.')
+    launch_description.add_action(action)
+
 
 def generate_launch_description() -> LaunchDescription:
     launch_description = LaunchDescription()
@@ -38,13 +45,15 @@ def generate_launch_description() -> LaunchDescription:
     package_path = get_package_share_path('hippo_sim')
     path = str(package_path / 'launch/start_gazebo.launch.py')
     source = PythonLaunchDescriptionSource(path)
-    action = IncludeLaunchDescription(source)
+    args = LaunchArgsDict()
+    args.add('start_gui')
+    action = IncludeLaunchDescription(source, launch_arguments=args.items())
     launch_description.add_action(action)
 
     ############################################################################
     # START MIXER
     ############################################################################
-    args = PassLaunchArguments()
+    args = LaunchArgsDict()
     args.add_vehicle_name_and_sim_time()
     package_path = get_package_share_path('hippo_control')
     path = str(package_path /
@@ -65,7 +74,7 @@ def generate_launch_description() -> LaunchDescription:
     package_path = get_package_share_path('hippo_sim')
     path = str(package_path / 'launch/spawn_bluerov.launch.py')
     source = PythonLaunchDescriptionSource(path)
-    args = PassLaunchArguments()
+    args = LaunchArgsDict()
     args.add_vehicle_name_and_sim_time()
     action = IncludeLaunchDescription(source, launch_arguments=args.items())
     launch_description.add_action(action)
