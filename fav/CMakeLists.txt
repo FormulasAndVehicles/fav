@@ -27,6 +27,12 @@ find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(hippo_msgs REQUIRED)
 
+install(PROGRAMS
+  nodes/scenario_node.py
+  nodes/robot_marker_publisher.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 # Install Python modules
 # ament_python_install_package(${PROJECT_NAME})
 
