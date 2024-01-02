@@ -17,7 +17,16 @@
   <buildtool_depend>ament_cmake_python</buildtool_depend>
 
   <depend>rclpy</depend>
+  <depend>rclcpp</depend>
+  <depend>hippo_common</depend>
   <depend>hippo_msgs</depend>
+  <depend>yaml-cpp</depend>
+  <depend>scenario_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>rviz_2d_overlay_msgs</depend>
+  <depend>visualization_msgs</depend>
+  <depend>geometry_msgs</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

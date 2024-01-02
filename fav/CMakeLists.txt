@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Thies Lennart Alff
+# Copyright (C) 2023-2024 Thies Lennart Alff
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -25,11 +25,40 @@ add_compile_options(${CXX_FLAGS})
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(hippo_common REQUIRED)
 find_package(hippo_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(scenario_msgs REQUIRED)
+find_package(rviz_2d_overlay_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 install(PROGRAMS
   nodes/scenario_node.py
   nodes/robot_marker_publisher.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+################################################################################
+# scenario node
+################################################################################
+add_executable(scenario_node src/scenario/scenario_node.cpp)
+ament_target_dependencies(scenario
+  rclcpp
+  hippo_common
+  scenario_msgs
+  std_msgs
+  std_srvs
+  geometry_msgs
+  rviz_2d_overlay_msgs
+  visualization_msgs
+  yaml-cpp
+)
+install(
+  TARGETS scenario_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
