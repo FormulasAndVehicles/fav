@@ -1,10 +1,7 @@
 #pragma once
-#include <algorithm>
-#include <deque>
 #include <eigen3/Eigen/Dense>
 #include <hippo_common/tf2_utils.hpp>
 #include <numeric>
-#include <queue>
 
 template <typename T>
 T WrapFloating(T x, T low, T high) {
@@ -24,8 +21,7 @@ T WrapPi(T x) {
 
 class ViewpointProgress {
  public:
-  ViewpointProgress(int size, double threshold) {
-    size_ = size;
+  ViewpointProgress(int threshold) : progress_counter_(0) {
     threshold_ = threshold;
     Reset();
   }
@@ -34,24 +30,16 @@ class ViewpointProgress {
     if (completed_) {
       return;
     }
-    progress_buffer_.pop_front();
-    progress_buffer_.push_back(in_tolerance);
-    const double sum =
-        std::accumulate(progress_buffer_.begin(), progress_buffer_.end(), 0.0);
-    if (progress_buffer_.size() > 0) {
-      progress_ = sum / progress_buffer_.size() / threshold_;
-      if (progress_ >= 1.0) {
-        completed_ = true;
-      }
-      progress_ = std::clamp(progress_, 0.0, 1.0);
+    progress_counter_ += in_tolerance ? 1 : -1;
+    if (progress_counter_ >= threshold_) {
+      completed_ = true;
     }
+    progress_counter_ = std::clamp(progress_counter_, 0, threshold_);
+    progress_ = static_cast<double>(progress_counter_) / threshold_;
   }
 
   void Reset() {
-    progress_buffer_.clear();
-    for (int i = 0; i < size_; ++i) {
-      progress_buffer_.push_back(false);
-    }
+    progress_counter_ = 0;
     progress_ = 0.0;
     completed_ = false;
   }
@@ -60,22 +48,20 @@ class ViewpointProgress {
   bool Completed() const { return completed_; }
 
  private:
-  std::deque<bool> progress_buffer_;
-  int size_;
+  int progress_counter_;
   bool completed_{false};
   double progress_;
-  double threshold_;
+  int threshold_;
 };
 
 class Viewpoint {
  public:
   Viewpoint(const Eigen::Vector3d &_position,
             const Eigen::Quaterniond &_orientation, double _position_tolerance,
-            double _angle_tolerance, int _buffer_size = 100,
-            double _threshold = 0.8)
+            double _angle_tolerance, int _threshold = 80)
       : position(_position),
         orientation(_orientation),
-        progress_(_buffer_size, _threshold),
+        progress_(_threshold),
         position_tolerance_(_position_tolerance),
         angle_tolerance_(_angle_tolerance) {}
 
