@@ -36,12 +36,6 @@ find_package(rviz_2d_overlay_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
-install(PROGRAMS
-  nodes/scenario_node.py
-  nodes/robot_marker_publisher.py
-  DESTINATION lib/${PROJECT_NAME}
-)
-
 ################################################################################
 # scenario node
 ################################################################################
