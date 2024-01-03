@@ -2,6 +2,7 @@
 
 #include <hippo_common/convert.hpp>
 #include <hippo_common/param_utils.hpp>
+#include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 namespace fav {
 namespace scenario {
 
@@ -69,8 +70,8 @@ void ScenarioNode::InitTimers() {
 
 void ScenarioNode::InitClients() {
   std::string name;
-  client_cb_group_ =
-      create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  client_cb_group_ = create_callback_group(
+      rclcpp::CallbackGroupType::MutuallyExclusive, false);
   rclcpp::QoS qos = rclcpp::ServicesQoS();
 
   name = "path_planner/start";
@@ -490,10 +491,21 @@ bool ScenarioNode::ReadViewpoints(const YAML::Node &node) {
 
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
-  rclcpp::executors::MultiThreadedExecutor exec;
+  std::vector<std::shared_ptr<std::thread>> spin_threads;
+  rclcpp::experimental::executors::EventsExecutor exec_main;
+  rclcpp::experimental::executors::EventsExecutor exec_client;
   auto node = std::make_shared<fav::scenario::ScenarioNode>();
-  exec.add_node(node);
-  exec.spin();
+  exec_main.add_node(node->get_node_base_interface());
+  exec_client.add_callback_group(node->client_cb_group_,
+                                 node->get_node_base_interface());
+  spin_threads.push_back(
+      std::make_shared<std::thread>([&exec_main]() { exec_main.spin(); }));
+  spin_threads.push_back(
+      std::make_shared<std::thread>([&exec_client]() { exec_client.spin(); }));
+
+  for (auto &thread : spin_threads) {
+    thread->join();
+  }
   rclcpp::shutdown();
   return 0;
 }

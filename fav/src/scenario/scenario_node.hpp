@@ -87,7 +87,10 @@ class ScenarioNode : public rclcpp::Node {
       pose_sub_;
   rclcpp::TimerBase::SharedPtr timer_;
 
+ public:
   rclcpp::CallbackGroup::SharedPtr client_cb_group_;
+
+ private:
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr start_path_planner_client_;
   rclcpp::Client<scenario_msgs::srv::MoveToStart>::SharedPtr
       move_to_start_client_;

@@ -61,6 +61,19 @@ install(
   TARGETS scenario_node
   DESTINATION lib/${PROJECT_NAME}
 )
+################################################################################
+# robot_marker node
+################################################################################
+add_executable(robot_marker_publisher src/robot_marker_publisher.cpp)
+ament_target_dependencies(robot_marker_publisher
+  rclcpp
+  geometry_msgs
+  visualization_msgs
+)
+install(
+  TARGETS robot_marker_publisher
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 # Install Python modules
 # ament_python_install_package(${PROJECT_NAME})
