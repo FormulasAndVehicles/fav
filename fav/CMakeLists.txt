@@ -46,7 +46,7 @@ install(PROGRAMS
 # scenario node
 ################################################################################
 add_executable(scenario_node src/scenario/scenario_node.cpp)
-ament_target_dependencies(scenario
+ament_target_dependencies(scenario_node
   rclcpp
   hippo_common
   scenario_msgs
