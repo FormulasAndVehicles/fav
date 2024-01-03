@@ -240,6 +240,7 @@ void ScenarioNode::AddObstacleMarkers() {
   marker.header.stamp = now();
   marker.header.frame_id = "map";
   for (const auto &obstacle : obstacles_) {
+    marker.points.clear();
     for (const auto &point : obstacle.points) {
       geometry_msgs::msg::Point p;
       p.x = point.x;
@@ -470,6 +471,7 @@ bool ScenarioNode::ReadObstacles(const YAML::Node &node) {
       p.z = kDepth;
       polygon.points.push_back(p);
     }
+    polygon.points.push_back(polygon.points.at(0));
     obstacles_.push_back(polygon);
   }
   return true;
