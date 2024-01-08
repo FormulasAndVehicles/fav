@@ -482,7 +482,7 @@ bool ScenarioNode::ReadViewpoints(const YAML::Node &node) {
   viewpoint_poses_ = node["viewpoints"].as<hippo_common::yaml::Poses>();
   viewpoints_.clear();
   for (const auto &pose : viewpoint_poses_) {
-    viewpoints_.emplace_back(pose.position, pose.orientation, 0.1, 0.1);
+    viewpoints_.emplace_back(pose.position, pose.orientation, 0.1, 0.2);
   }
   return true;
 }
