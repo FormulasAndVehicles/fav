@@ -66,6 +66,7 @@ class ScenarioNode : public rclcpp::Node {
   bool running_{false};
   bool start_position_reached_{false};
   bool viewpoints_finished_{false};
+  bool initial_position_information_received_{false};
   Eigen::Vector3d vehicle_position_;
   Eigen::Quaterniond vehicle_orientation_;
   ViewpointIndex viewpoint_index_;
