@@ -19,7 +19,7 @@
   <depend>rclpy</depend>
   <depend>rclcpp</depend>
   <depend>hippo_common</depend>
-  <depend>hippo_msgs</depend>
+  <depend>hippo_control_msgs</depend>
   <depend>yaml-cpp</depend>
   <depend>scenario_msgs</depend>
   <depend>std_msgs</depend>

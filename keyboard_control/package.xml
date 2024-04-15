@@ -17,7 +17,7 @@
   <buildtool_depend>ament_cmake_python</buildtool_depend>
 
   <depend>rclpy</depend>
-  <depend>hippo_msgs</depend>
+  <depend>hippo_control_msgs</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

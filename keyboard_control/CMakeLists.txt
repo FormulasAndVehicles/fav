@@ -25,7 +25,7 @@ add_compile_options(${CXX_FLAGS})
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
-find_package(hippo_msgs REQUIRED)
+find_package(hippo_control_msgs REQUIRED)
 
 # Install Python modules
 # ament_python_install_package(${PROJECT_NAME})
