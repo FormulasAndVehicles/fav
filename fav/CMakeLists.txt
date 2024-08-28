@@ -35,6 +35,7 @@ find_package(scenario_msgs REQUIRED)
 find_package(rviz_2d_overlay_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 
 ################################################################################
 # scenario node
@@ -50,6 +51,7 @@ ament_target_dependencies(scenario_node
   rviz_2d_overlay_msgs
   visualization_msgs
   yaml-cpp
+  ament_index_cpp
 )
 install(
   TARGETS scenario_node
