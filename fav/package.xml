@@ -27,6 +27,7 @@
   <depend>rviz_2d_overlay_msgs</depend>
   <depend>visualization_msgs</depend>
   <depend>geometry_msgs</depend>
+  <depend>ament_index_cpp</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
