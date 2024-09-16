@@ -11,8 +11,9 @@ from launch_ros.actions import Node
 
 
 def declare_launch_args(launch_description: LaunchDescription) -> None:
-    declare_vehicle_name_and_sim_time(launch_description=launch_description,
-                                      use_sim_time_default='true')
+    declare_vehicle_name_and_sim_time(
+        launch_description=launch_description, use_sim_time_default='true'
+    )
 
 
 def include_simulation_launch(launch_description: LaunchDescription) -> None:
@@ -22,15 +23,18 @@ def include_simulation_launch(launch_description: LaunchDescription) -> None:
     args.add_vehicle_name_and_sim_time()
     source = PythonLaunchDescriptionSource(path)
     launch_description.add_action(
-        IncludeLaunchDescription(source, launch_arguments=args.items()))
+        IncludeLaunchDescription(source, launch_arguments=args.items())
+    )
 
 
 def add_keyboard_control_node(launch_description: LaunchDescription) -> None:
-    action = Node(executable='keyboard_control_node',
-                  package='keyboard_control',
-                  name='keyboard_control',
-                  namespace=LaunchConfiguration('vehicle_name'),
-                  on_exit=Shutdown())
+    action = Node(
+        executable='keyboard_control_node',
+        package='keyboard_control',
+        name='keyboard_control',
+        namespace=LaunchConfiguration('vehicle_name'),
+        on_exit=Shutdown(),
+    )
     launch_description.add_action(action)
 
 

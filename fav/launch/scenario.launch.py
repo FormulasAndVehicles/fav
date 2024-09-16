@@ -19,34 +19,38 @@ def generate_launch_description() -> LaunchDescription:
     scenario_arg = DeclareLaunchArgument(
         name='scenario',
         default_value=str(1),
-        description='The number of the scenario')
+        description='The number of the scenario',
+    )
     launch_description.add_action(scenario_arg)
 
     rviz_file = str(
-        get_package_share_path('final_project') / 'config/rviz.rviz')
+        get_package_share_path('final_project') / 'config/rviz.rviz'
+    )
 
-    group = GroupAction([
-        PushROSNamespace(LaunchConfiguration('vehicle_name')),
-        Node(
-            executable='scenario_node.py',
-            package='fav',
-            parameters=[
-                {
-                    'scenario': LaunchConfiguration('scenario'),
-                    'use_sim_time': LaunchConfiguration('use_sim_time'),
-                },
-            ],
-        ),
-        Node(
-            executable='robot_marker_publisher.py',
-            package='fav',
-            parameters=[
-                {
-                    'use_sim_time': LaunchConfiguration('use_sim_time'),
-                },
-            ],
-        ),
-    ])
+    group = GroupAction(
+        [
+            PushROSNamespace(LaunchConfiguration('vehicle_name')),
+            Node(
+                executable='scenario_node.py',
+                package='fav',
+                parameters=[
+                    {
+                        'scenario': LaunchConfiguration('scenario'),
+                        'use_sim_time': LaunchConfiguration('use_sim_time'),
+                    },
+                ],
+            ),
+            Node(
+                executable='robot_marker_publisher.py',
+                package='fav',
+                parameters=[
+                    {
+                        'use_sim_time': LaunchConfiguration('use_sim_time'),
+                    },
+                ],
+            ),
+        ]
+    )
     launch_description.add_action(group)
     action = Node(
         executable='rviz2',

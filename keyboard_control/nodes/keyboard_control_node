@@ -23,12 +23,11 @@ from hippo_control_msgs.msg import ActuatorSetpoint
 from python_qt_binding import QtCore, QtGui, QtWidgets
 from rclpy.node import Node
 
-DOFs = ("roll", "pitch", "yaw", "thrust", "vertical_thrust", "lateral_thrust")
-BUTTONS = ("W", "S", "A", "D", "J", "L", "I", "K")
+DOFs = ('roll', 'pitch', 'yaw', 'thrust', 'vertical_thrust', 'lateral_thrust')
+BUTTONS = ('W', 'S', 'A', 'D', 'J', 'L', 'I', 'K')
 
 
 class NotClickableButton(QtWidgets.QPushButton):
-
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -37,17 +36,18 @@ class NotClickableButton(QtWidgets.QPushButton):
 
 
 class KeyboardNode(Node):
-
     def __init__(self, node_name: str):
         super().__init__(node_name=node_name)
 
         qos = rclpy.qos.qos_profile_sensor_data
         self.torque_msg = ActuatorSetpoint()
         self.thrust_msg = ActuatorSetpoint()
-        self.torque_pub = self.create_publisher(ActuatorSetpoint,
-                                                'torque_setpoint', qos)
-        self.thrust_pub = self.create_publisher(ActuatorSetpoint,
-                                                'thrust_setpoint', qos)
+        self.torque_pub = self.create_publisher(
+            ActuatorSetpoint, 'torque_setpoint', qos
+        )
+        self.thrust_pub = self.create_publisher(
+            ActuatorSetpoint, 'thrust_setpoint', qos
+        )
         self.publish_timer = self.create_timer(1 / 50.0, self.on_publish_timer)
 
     def on_publish_timer(self):
@@ -71,7 +71,6 @@ class KeyboardNode(Node):
 
 
 class Window(QtWidgets.QWidget):
-
     def __init__(self, parent=None):
         super().__init__(parent)
         self.node = KeyboardNode('keyboard')
@@ -90,19 +89,19 @@ class Window(QtWidgets.QWidget):
             slider_grid.addWidget(self.sliders[slider], i, 1)
         slider_box.setLayout(slider_grid)
 
-        control_box = QtWidgets.QGroupBox("Controls")
+        control_box = QtWidgets.QGroupBox('Controls')
         grid_buttons_left = QtWidgets.QGridLayout()
         self.buttons = self.create_buttons()
-        grid_buttons_left.addWidget(self.buttons["W"], 0, 1)
-        grid_buttons_left.addWidget(self.buttons["A"], 1, 0)
-        grid_buttons_left.addWidget(self.buttons["S"], 1, 1)
-        grid_buttons_left.addWidget(self.buttons["D"], 1, 2)
+        grid_buttons_left.addWidget(self.buttons['W'], 0, 1)
+        grid_buttons_left.addWidget(self.buttons['A'], 1, 0)
+        grid_buttons_left.addWidget(self.buttons['S'], 1, 1)
+        grid_buttons_left.addWidget(self.buttons['D'], 1, 2)
 
         grid_buttons_right = QtWidgets.QGridLayout()
-        grid_buttons_right.addWidget(self.buttons["J"], 1, 0)
-        grid_buttons_right.addWidget(self.buttons["L"], 1, 2)
-        grid_buttons_right.addWidget(self.buttons["I"], 0, 1)
-        grid_buttons_right.addWidget(self.buttons["K"], 1, 1)
+        grid_buttons_right.addWidget(self.buttons['J'], 1, 0)
+        grid_buttons_right.addWidget(self.buttons['L'], 1, 2)
+        grid_buttons_right.addWidget(self.buttons['I'], 0, 1)
+        grid_buttons_right.addWidget(self.buttons['K'], 1, 1)
         hbox = QtWidgets.QHBoxLayout()
         hbox.addLayout(grid_buttons_left)
         line = QtWidgets.QFrame()
@@ -131,7 +130,8 @@ class Window(QtWidgets.QWidget):
         slider.setSingleStep(1)
         slider.setObjectName(name)
         slider.valueChanged.connect(
-            lambda value: self.on_slider_changed(value, name))
+            lambda value: self.on_slider_changed(value, name)
+        )
         self.scaling[name] = slider.value() / 100.0
         slider.setFocusPolicy(QtCore.Qt.NoFocus)
         return slider
@@ -141,23 +141,23 @@ class Window(QtWidgets.QWidget):
         button.setObjectName(name)
         button.setText(name)
         button.setFocusPolicy(QtCore.Qt.NoFocus)
-        button.setStyleSheet("background-color : #183b65; color : white;")
-        if name == "W":
-            button.setToolTip("Positive thrust.")
-        elif name == "S":
-            button.setToolTip("Negative thrust.")
-        elif name == "A":
-            button.setToolTip("Positive lateral thrust.")
-        elif name == "D":
-            button.setToolTip("Negative lateral thrust.")
-        elif name == "J":
-            button.setToolTip("Positive yaw.")
-        elif name == "L":
-            button.setToolTip("Negative yaw.")
-        elif name == "I":
-            button.setToolTip("Positive vertical thrust.")
-        elif name == "K":
-            button.setToolTip("Negative vertical thrust.")
+        button.setStyleSheet('background-color : #183b65; color : white;')
+        if name == 'W':
+            button.setToolTip('Positive thrust.')
+        elif name == 'S':
+            button.setToolTip('Negative thrust.')
+        elif name == 'A':
+            button.setToolTip('Positive lateral thrust.')
+        elif name == 'D':
+            button.setToolTip('Negative lateral thrust.')
+        elif name == 'J':
+            button.setToolTip('Positive yaw.')
+        elif name == 'L':
+            button.setToolTip('Negative yaw.')
+        elif name == 'I':
+            button.setToolTip('Positive vertical thrust.')
+        elif name == 'K':
+            button.setToolTip('Negative vertical thrust.')
         return button
 
     def create_buttons(self):
@@ -169,53 +169,55 @@ class Window(QtWidgets.QWidget):
     def on_key_pressed(self, name):
         try:
             self.buttons[name].setStyleSheet(
-                "background-color: #2dc6d6; color: white;")
+                'background-color: #2dc6d6; color: white;'
+            )
         except KeyError:
             return
 
     def on_key_released(self, name):
         try:
             self.buttons[name].setStyleSheet(
-                "background-color : #183b65; color : white;")
+                'background-color : #183b65; color : white;'
+            )
         except KeyError:
             return
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         sign = 1.0
-        dof = ""
-        key = ""
+        dof = ''
+        key = ''
         if event.key() == QtCore.Qt.Key_A:
-            dof = "lateral_thrust"
+            dof = 'lateral_thrust'
             sign = 1.0
-            key = "A"
+            key = 'A'
         elif event.key() == QtCore.Qt.Key_D:
-            dof = "lateral_thrust"
+            dof = 'lateral_thrust'
             sign = -1.0
-            key = "D"
+            key = 'D'
         elif event.key() == QtCore.Qt.Key_W:
-            dof = "thrust"
+            dof = 'thrust'
             sign = 1.0
-            key = "W"
+            key = 'W'
         elif event.key() == QtCore.Qt.Key_S:
-            dof = "thrust"
+            dof = 'thrust'
             sign = -1.0
-            key = "S"
+            key = 'S'
         elif event.key() == QtCore.Qt.Key_J:
-            dof = "yaw"
+            dof = 'yaw'
             sign = 1.0
-            key = "J"
+            key = 'J'
         elif event.key() == QtCore.Qt.Key_L:
-            dof = "yaw"
+            dof = 'yaw'
             sign = -1.0
-            key = "L"
+            key = 'L'
         elif event.key() == QtCore.Qt.Key_I:
-            dof = "vertical_thrust"
+            dof = 'vertical_thrust'
             sign = 1.0
-            key = "I"
+            key = 'I'
         elif event.key() == QtCore.Qt.Key_K:
-            dof = "vertical_thrust"
+            dof = 'vertical_thrust'
             sign = -1.0
-            key = "K"
+            key = 'K'
         else:
             return
         self.on_key_pressed(key)
@@ -223,46 +225,50 @@ class Window(QtWidgets.QWidget):
         self.set_output()
 
     def set_output(self):
-        self.node.set_thrusts([
-            self.values['thrust'],
-            self.values['lateral_thrust'],
-            self.values['vertical_thrust'],
-        ])
-        self.node.set_torques([
-            self.values['roll'],
-            self.values['pitch'],
-            self.values['yaw'],
-        ])
+        self.node.set_thrusts(
+            [
+                self.values['thrust'],
+                self.values['lateral_thrust'],
+                self.values['vertical_thrust'],
+            ]
+        )
+        self.node.set_torques(
+            [
+                self.values['roll'],
+                self.values['pitch'],
+                self.values['yaw'],
+            ]
+        )
 
     def keyReleaseEvent(self, event: QtGui.QKeyEvent) -> None:
         if event.isAutoRepeat():
             return
-        dof = ""
-        key = ""
+        dof = ''
+        key = ''
         if event.key() == QtCore.Qt.Key_A:
-            dof = "lateral_thrust"
-            key = "A"
+            dof = 'lateral_thrust'
+            key = 'A'
         elif event.key() == QtCore.Qt.Key_D:
-            dof = "lateral_thrust"
-            key = "D"
+            dof = 'lateral_thrust'
+            key = 'D'
         elif event.key() == QtCore.Qt.Key_W:
-            dof = "thrust"
-            key = "W"
+            dof = 'thrust'
+            key = 'W'
         elif event.key() == QtCore.Qt.Key_S:
-            dof = "thrust"
-            key = "S"
+            dof = 'thrust'
+            key = 'S'
         elif event.key() == QtCore.Qt.Key_J:
-            dof = "yaw"
-            key = "J"
+            dof = 'yaw'
+            key = 'J'
         elif event.key() == QtCore.Qt.Key_L:
-            dof = "yaw"
-            key = "L"
+            dof = 'yaw'
+            key = 'L'
         elif event.key() == QtCore.Qt.Key_I:
-            dof = "vertical_thrust"
-            key = "I"
+            dof = 'vertical_thrust'
+            key = 'I'
         elif event.key() == QtCore.Qt.Key_K:
-            dof = "vertical_thrust"
-            key = "K"
+            dof = 'vertical_thrust'
+            key = 'K'
         else:
             return
         self.on_key_released(key)
@@ -281,6 +287,7 @@ class Window(QtWidgets.QWidget):
         self.set_output()
         self.node.publish()
         import time
+
         time.sleep(0.1)
         rclpy.shutdown()
         event.accept()
