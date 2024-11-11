@@ -114,6 +114,11 @@ void ScenarioNode::ServeStart(
     response->message = "Already running.";
     return;
   }
+  if (!initial_position_information_received_){
+    response->success = false;
+    response->message = "Current vehicle position still unknown.";
+    return;
+  }
   Reset();
   running_ = true;
   using hippo_common::convert::EigenToRos;
@@ -300,6 +305,9 @@ void ScenarioNode::OnPose(
   using hippo_common::convert::RosToEigen;
   RosToEigen(_msg->pose.pose.position, vehicle_position_);
   RosToEigen(_msg->pose.pose.orientation, vehicle_orientation_);
+  if (!initial_position_information_received_){
+    initial_position_information_received_ = true;
+  }
 
   UpdateViewpointProgress();
   viewpoint_index_.current = FindViewpointInTolerance();
